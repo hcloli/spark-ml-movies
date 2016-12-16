@@ -1,4 +1,4 @@
-package com.tikal.spark
+package com.tikal.spark.test
 
 import org.apache.spark.sql.SparkSession
 
@@ -16,7 +16,7 @@ object ClusteringExample {
             .getOrCreate()
 
     // Loads data.
-    val dataset = spark.read.format("libsvm").load("/Users/haimcohen/git/spark/data/mllib/sample_kmeans_data.txt")
+    val dataset = spark.read.format("libsvm").load("data/sample_kmeans_data.txt")
 
     dataset.show(10)
     // Trains a k-means model.

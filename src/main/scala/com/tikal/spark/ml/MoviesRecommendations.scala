@@ -1,4 +1,4 @@
-package com.tikal.spark
+package com.tikal.spark.ml
 
 import org.apache.spark.ml.clustering.KMeans
 import org.apache.spark.ml.feature.StringIndexer
@@ -16,7 +16,7 @@ case class Movie(movieId: Int, title: String, genere: String)
 
 case class Rating(userId: Int, movieId: Int, rating: Double, timestamp: Int)
 
-object Movies1mCluster extends App {
+object MoviesRecommendations extends App {
 
   val spark = SparkSession.builder()
     .appName("movies-clusters")
@@ -69,18 +69,16 @@ object Movies1mCluster extends App {
     val ar = Array.fill(bGenereMap.value.size) {
       0.0
     }
-    splitted.foreach(genere => {
-      val op: Option[Int] = bGenereMap.value.get(genere)
-      ar(op.get) = 1.0
-    })
+    splitted
+      .foreach(genere => ar(bGenereMap.value(genere)) = 1.0)
     (movie.movieId, Vectors.dense(ar), movie.genere)
   }).withColumnRenamed("_1", "movieId")
-    .withColumnRenamed("_2","genereVector")
-    .withColumnRenamed("_3","genere") //Rename output columns
+    .withColumnRenamed("_2", "genereVector")
+    .withColumnRenamed("_3", "genere") //Rename output columns
 
   //Cluster the movies according to generes
   val kmeans: KMeans = new KMeans()
-    .setK(20) //Wild guess of number of desired clusters
+    .setK(30) //Wild guess of number of desired clusters
     .setSeed(1L)
     .setFeaturesCol("genereVector")
     .setPredictionCol("clusterId")
@@ -137,7 +135,7 @@ object Movies1mCluster extends App {
     .join(userClusterRatings, userClusterRatings.col("clusterId") === clusters.col("clusterId"), "left_outer")
     .drop("clusterId", "genereVector", "genere", "userId")
     .withColumnRenamed("avgRatingPerClusterAndUser", "avgRatingPerCluster")
-  println("---------- User cluster rating joined with clusters")
+  println("---------- Movies average rating according to clusters")
   movieAvgRatingByCluster.show(50)
 
 

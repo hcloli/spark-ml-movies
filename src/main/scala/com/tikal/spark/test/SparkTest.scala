@@ -1,11 +1,11 @@
-package com.tikal.spark
+package com.tikal.spark.test
 
 import org.apache.spark.sql.SparkSession
 
 /**
   * Created by haimcohen on 14/12/2016.
   */
-object App {
+object SparkTest {
 
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
