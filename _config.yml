@@ -1,2 +1,4 @@
-theme: jekyll-theme-cayman
-highlighter: rouge
+# Dependencies
+theme: jekyll-theme-slate
+markdown:    kramdown
+highlighter: pygments
