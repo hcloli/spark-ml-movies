@@ -2,7 +2,7 @@
 Spark's clustering algorithms, as much as all other algorithms in MLlib works with vectors of numbers. The input to clustering is a column containing the vector and the output is a new column with the cluster number for each record.
 ## Data
 To demonstrate a use case I'll use a movies rating database constructed by the University of Minnesota and published [here](http://files.grouplens.org/datasets/movielens/). If we look at the movies file we can see each movie has one or more genre describing it:
-```
+~~~
 +-------+-------------------------------------+----------------------------+
 |movieId|title                                |genre                       |
 +-------+-------------------------------------+----------------------------+
@@ -29,9 +29,9 @@ To demonstrate a use case I'll use a movies rating database constructed by the U
 +-------+-------------------------------------+----------------------------+
 only showing top 20 rows
 
-```
+~~~
 To create that table we will use the following code:
-```scala
+~~~scala
   case class Movie(movieId: Int, title: String, genere: String)
   
   //Read :: delimited file into Dataset[Movie].
@@ -45,22 +45,22 @@ To create that table we will use the following code:
     })
   println("------ Movies: ")
   movies.show(20, false)
-```
+~~~
 In the above code we define case class Movie to hold each record and loading the file using ```spark.read.textFile```. Since the file uses ```::``` as a delimiter, we cannot use Spark 2.0's CSV loader as it support single character delimiter only.
 
 ## Vector of genres
 To be able to run clustering using the genre attribute of each movie, we need to construct a vector for each movie containing numbers that represents the genre. One way to do so is to build a vector of zeros in the length of number of distinct genres in the entire movies file, and mark the columns representing the movies genres with 1. Surely, we need to make sure all movie records has the same order of vector members. For instance, the first number will always represent Drama while the second represent Comedy etc.
 In order to do so, we first need the distinct list of genres and index them. For this task I used flatMap and Spark MLlib's **StringIndexer** which index every occurence of a string in a column:
-```scala
+~~~scala
   //Generate a genre dataset. Each movie.genre have several genres seperated by path.
   //Using flat map too create single list
   //[value : String]
   val genres: DataFrame = movies
     .flatMap(_.genre.split('|'))
     .withColumnRenamed("value", "genre")
-```
+~~~
 The code above using flat map to flatten the genre column. This way we get flat list of genres. Now lets use **StringIndexer** to index all genres and then distinct the list:
-```scala
+~~~scala
   //Give ID for each genere using Spark ML StringIndexer
   //[value : String, genereIndex: Double]
   val generesIndex: Dataset[Row] = new StringIndexer()
@@ -74,9 +74,9 @@ The code above using flat map to flatten the genre column. This way we get flat 
   val distinctGenere: Dataset[Row] = generesIndex.distinct()
   println("----------- Generes:")
   distinctGenere.show(20)
-```
+~~~
 **StringIndexer** not only index each unique value of genre but also ranks them so most frequent genre will get the smaller index and the infrequent will get the highest. The code above will produce the following output:
-```
+~~~
 ----------- Genres:
 +-----------+----------+
 |      genre|genreIndex|
@@ -100,9 +100,9 @@ The code above using flat map to flatten the genre column. This way we get flat 
 |    Fantasy|      16.0|
 |  Film-Noir|      17.0|
 +-----------+----------+
-```
+~~~
 Now, let's use this index table to create a vecotor for each movie, where the first value will designate Drama, the second is Comedy etc.
-```scala
+~~~scala
   //Prepare lookup table of genre -> index and broadcast it to spark workers
   val genreMap = distinctGenre.rdd.map(row => {
     row.get(0) -> row.getDouble(1).toInt
@@ -123,9 +123,9 @@ Now, let's use this index table to create a vecotor for each movie, where the fi
     .withColumnRenamed("_2", "genreVector")
     .withColumnRenamed("_3", "genre") //Rename output columns
   vectorDs.show(20, false)
-```
+~~~
 The code above convert the ```distinctGenere``` dataset to map where genre is the key and its index is the value. Then, it broadcasts that map (so all Spark executors will get copy) and use it to constract a dense vector where all values are zero except the genre of that movie which is set to 1.0. The code produces the following output:
-```
+~~~
 +-------+-------------------------------------------------------------------------+----------------------------+
 |movieId|genreVector                                                              |genre                       |
 +-------+-------------------------------------------------------------------------+----------------------------+
@@ -151,9 +151,9 @@ The code above convert the ```distinctGenere``` dataset to map where genre is th
 |20     |[0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0]|Action                      |
 +-------+-------------------------------------------------------------------------+----------------------------+
 only showing top 20 rows
-```
+~~~
 Now, we are ready to feed the vectors to the clustering algorithm and get the clusters.
-```scala
+~~~scala
   //Cluster the movies according to genres
   val kmeans: KMeans = new KMeans()
     .setK(20) //Number of desired clusters
@@ -168,9 +168,9 @@ Now, we are ready to feed the vectors to the clustering algorithm and get the cl
 
   println("--------- Clusters:")
   clusters.show(50, false)
-```
+~~~
 The code above initialize **KMeans** cluster algorithm and runs the cluster. The **fit** command builds the clustering model while the **transform** command actually classify the movies into the right cluster using the model. Now you can see each movie to which cluster it belongs:
-```
+~~~
 --------- Clusters:
 +-------+----------------------------+---------+
 |movieId|genre                       |clusterId|
@@ -207,7 +207,7 @@ The code above initialize **KMeans** cluster algorithm and runs the cluster. The
 |30     |Drama                       |1        |
 +-------+----------------------------+---------+
 only showing top 30 rows
-```
+~~~
 You can see a great exaple of the power of clustering. Take for example cluster 18. It has movie 2 whith genres **Adventure|Children's|Fantasy**, movie 8 with generes **Adventure|Children's** and movie 29 with genres **Adventure|Sci-Fi**. In cluster 0 the leading genre is **Thriller** while in cluster 4 it is **Animation**
 ## What's next
 In the [MoviesRecommendations](https://github.com/hcloli/spark-ml-movies/blob/master/src/main/scala/com/tikal/spark/ml/MoviesRecommendations.scala) example I used the clusters to recommend movies to users based on their previous rating. I used Spark SQL to calculate the average rating of a certain user in each cluster and recommend him movies he did not rate (and probably did not watched) according to other movies he rated in the same cluster. The average rating per cluster per user is done using the cool ```Window``` function of spark SQL. This I might discuss next time 
