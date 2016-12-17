@@ -1,2 +1,3 @@
 # Dependencies
+markdown:  Redcarpet
 highlighter: rouge
