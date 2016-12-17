@@ -1,4 +1,4 @@
 # Dependencies
 theme: jekyll-theme-slate
 markdown:    kramdown
-highlighter: pygments
+highlighter: rouge
