@@ -1,4 +1,3 @@
 # Dependencies
-theme: jekyll-theme-slate
 markdown:    kramdown
-highlighter: rouge
+highlighter: pygments
