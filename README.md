@@ -2,7 +2,32 @@
 Spark's clustering algorithms, as much as all other algorithms in MLlib works with vectors of numbers. The input to clustering is a column containing the vector and the output is a new column with the cluster number for each record.
 ## Data
 To demonstrate a use case I'll use a movies rating database constructed by the University of Minnesota and published [here](http://files.grouplens.org/datasets/movielens/). If we look at the movies file we can see each movie has one or more genre describing it:
-
+```
++-------+-------------------------------------+----------------------------+
+|movieId|title                                |genre                       |
++-------+-------------------------------------+----------------------------+
+|1      |Toy Story (1995)                     |Animation|Children's|Comedy |
+|2      |Jumanji (1995)                       |Adventure|Children's|Fantasy|
+|3      |Grumpier Old Men (1995)              |Comedy|Romance              |
+|4      |Waiting to Exhale (1995)             |Comedy|Drama                |
+|5      |Father of the Bride Part II (1995)   |Comedy                      |
+|6      |Heat (1995)                          |Action|Crime|Thriller       |
+|7      |Sabrina (1995)                       |Comedy|Romance              |
+|8      |Tom and Huck (1995)                  |Adventure|Children's        |
+|9      |Sudden Death (1995)                  |Action                      |
+|10     |GoldenEye (1995)                     |Action|Adventure|Thriller   |
+|11     |American President, The (1995)       |Comedy|Drama|Romance        |
+|12     |Dracula: Dead and Loving It (1995)   |Comedy|Horror               |
+|13     |Balto (1995)                         |Animation|Children's        |
+|14     |Nixon (1995)                         |Drama                       |
+|15     |Cutthroat Island (1995)              |Action|Adventure|Romance    |
+|16     |Casino (1995)                        |Drama|Thriller              |
+|17     |Sense and Sensibility (1995)         |Drama|Romance               |
+|18     |Four Rooms (1995)                    |Thriller                    |
+|19     |Ace Ventura: When Nature Calls (1995)|Comedy                      |
+|20     |Money Train (1995)                   |Action                      |
++-------+-------------------------------------+----------------------------+
+```
 To create that table we will use the following code:
 ``` scala
   case class Movie(movieId: Int, title: String, genere: String)
