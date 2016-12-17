@@ -28,10 +28,9 @@ To demonstrate a use case I'll use a movies rating database constructed by the U
 |20     |Money Train (1995)                   |Action                      |
 +-------+-------------------------------------+----------------------------+
 only showing top 20 rows
-
 ~~~
 To create that table we will use the following code:
-~~~scala
+~~~ scala
   case class Movie(movieId: Int, title: String, genere: String)
   
   //Read :: delimited file into Dataset[Movie].
@@ -51,7 +50,7 @@ In the above code we define case class Movie to hold each record and loading the
 ## Vector of genres
 To be able to run clustering using the genre attribute of each movie, we need to construct a vector for each movie containing numbers that represents the genre. One way to do so is to build a vector of zeros in the length of number of distinct genres in the entire movies file, and mark the columns representing the movies genres with 1. Surely, we need to make sure all movie records has the same order of vector members. For instance, the first number will always represent Drama while the second represent Comedy etc.
 In order to do so, we first need the distinct list of genres and index them. For this task I used flatMap and Spark MLlib's **StringIndexer** which index every occurence of a string in a column:
-~~~scala
+~~~ scala
   //Generate a genre dataset. Each movie.genre have several genres seperated by path.
   //Using flat map too create single list
   //[value : String]
@@ -60,7 +59,7 @@ In order to do so, we first need the distinct list of genres and index them. For
     .withColumnRenamed("value", "genre")
 ~~~
 The code above using flat map to flatten the genre column. This way we get flat list of genres. Now lets use **StringIndexer** to index all genres and then distinct the list:
-~~~scala
+~~~ scala
   //Give ID for each genere using Spark ML StringIndexer
   //[value : String, genereIndex: Double]
   val generesIndex: Dataset[Row] = new StringIndexer()
@@ -102,7 +101,7 @@ The code above using flat map to flatten the genre column. This way we get flat 
 +-----------+----------+
 ~~~
 Now, let's use this index table to create a vecotor for each movie, where the first value will designate Drama, the second is Comedy etc.
-~~~scala
+~~~ scala
   //Prepare lookup table of genre -> index and broadcast it to spark workers
   val genreMap = distinctGenre.rdd.map(row => {
     row.get(0) -> row.getDouble(1).toInt
@@ -153,7 +152,7 @@ The code above convert the ```distinctGenere``` dataset to map where genre is th
 only showing top 20 rows
 ~~~
 Now, we are ready to feed the vectors to the clustering algorithm and get the clusters.
-~~~scala
+~~~ scala
   //Cluster the movies according to genres
   val kmeans: KMeans = new KMeans()
     .setK(20) //Number of desired clusters
