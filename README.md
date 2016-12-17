@@ -165,7 +165,7 @@ Now, we are ready to feed the vectors to the clustering algorithm and get the cl
     .transform(vectorDs)
 
   println("--------- Clusters:")
-  clusters.show(50, false)
+  clusters.drop("genreVector").show(50, false)
 ```
 The code above initialize **KMeans** cluster algorithm and runs the cluster. The **fit** command builds the clustering model while the **transform** command actually classify the movies into the right cluster using the model. Now you can see each movie to which cluster it belongs:
 ```
