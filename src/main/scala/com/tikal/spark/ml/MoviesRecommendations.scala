@@ -67,20 +67,21 @@ object MoviesRecommendations extends App {
   //Prepare features vector for each movie
   //[movieId: Int, features: Vector]
   val vectorDs: Dataset[Row] = movies.map(movie => {
-    val splitted = movie.genre.split('|')
-    val ar = Array.fill(bGenreMap.value.size) {
+    val splittedGenre = movie.genre.split('|')
+    val genreArray = Array.fill(bGenreMap.value.size) {
       0.0
     }
-    splitted
-      .foreach(genre => ar(bGenreMap.value(genre)) = 1.0)
-    (movie.movieId, Vectors.dense(ar), movie.genre)
+    splittedGenre
+      .foreach(genre => genreArray(bGenreMap.value(genre)) = 1.0)
+    (movie.movieId, Vectors.dense(genreArray), movie.genre)
   }).withColumnRenamed("_1", "movieId")
     .withColumnRenamed("_2", "genreVector")
     .withColumnRenamed("_3", "genre") //Rename output columns
+  vectorDs.show(20, false)
 
   //Cluster the movies according to genres
   val kmeans: KMeans = new KMeans()
-    .setK(30) //Wild guess of number of desired clusters
+    .setK(20) //Number of desired clusters
     .setSeed(1L)
     .setFeaturesCol("genreVector")
     .setPredictionCol("clusterId")
@@ -91,7 +92,7 @@ object MoviesRecommendations extends App {
     .transform(vectorDs)
 
   println("--------- Clusters:")
-  clusters.show(50, false)
+  clusters.drop("genreVector").show(30, false)
 
   //Read ratings file
   //[Rating(userId: Int, movieId: Int, rating: Double, timestamp: Int)]
