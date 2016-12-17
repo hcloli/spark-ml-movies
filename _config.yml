@@ -1,5 +1,5 @@
 # Dependencies
 markdown:    kramdown
-highlighter: pygments
+highlighter: rouge
 
 theme: jekyll-theme-cayman
