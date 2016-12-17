@@ -1,2 +1,4 @@
+# Dependencies
 theme: jekyll-theme-slate
-highlighter: rouge
+markdown:    kramdown
+highlighter: pygments
